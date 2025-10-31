@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ECommerceMaui.ProductDetailPage"
+             Title="Detalle del Producto"
+             Shell.NavBarHasShadow="False"
+             Shell.BackgroundColor="#1C1C1E"
+             Shell.TitleColor="White">
+
+    <ScrollView>
+        <Grid RowSpacing="15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Image x:Name="ProductImage"
+                   Aspect="AspectFill"
+                   HeightRequest="300"
+                   BackgroundColor="#2C2C2E"
+                   Grid.Row="0" />
+
+            <Label x:Name="ProductNameLabel"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   Margin="20,10,20,0"
+                   Grid.Row="1" />
+
+            <Label x:Name="ProductPriceLabel"
+                   FontSize="24"
+                   TextColor="#0A84FF" FontAttributes="Bold"
+                   Margin="20,0"
+                   Grid.Row="2" />
+
+            <Label x:Name="ProductDescriptionLabel"
+                   FontSize="16"
+                   TextColor="Gray"
+                   Margin="20,10"
+                   Grid.Row="3" />
+
+            <Button Text="Agregar al Carrito"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    BackgroundColor="#0A84FF"
+                    CornerRadius="10"
+                    Margin="20"
+                    Grid.Row="4"
+                    VerticalOptions="End"
+                    Clicked="OnAddToCartClicked" />
+        </Grid>
+    </ScrollView>
+</ContentPage>

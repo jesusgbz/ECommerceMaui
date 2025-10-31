@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="ECommerceMaui.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:ECommerceMaui"
+    Shell.FlyoutBehavior="Disabled"
+    Title="ECommerceMaui">
+
+    <Shell.BackgroundColor>
+        #1C1C1E
+    </Shell.BackgroundColor>
+    <Shell.TitleColor>
+        White
+    </Shell.TitleColor>
+
+    <TabBar>
+        <ShellContent
+            Title="Inicio"
+            ContentTemplate="{DataTemplate local:HomePage}"
+            Route="HomePage"
+            Icon="dotnet_bot.png"/>
+        <ShellContent
+            Title="Carrito"
+            ContentTemplate="{DataTemplate local:ShoppingCartPage}"
+            Route="ShoppingCartPage"
+            Icon="dotnet_bot.png"/>
+
+        <ShellContent
+            Title="Perfil"
+            ContentTemplate="{DataTemplate local:ProfilePage}"
+            Route="ProfilePage"
+            Icon="dotnet_bot.png"/>
+    </TabBar>
+
+</Shell>

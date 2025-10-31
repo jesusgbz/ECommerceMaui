@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ECommerceMaui.LoginPage"
+             Title="LoginPage"
+             Shell.NavBarIsVisible="False" 
+             BackgroundColor="#1C1C1E">
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="15" 
+            VerticalOptions="Center">
+
+            <Label 
+                Text="DarkPX Store"
+                FontSize="Header"
+                FontAttributes="Bold"
+                TextColor="White"
+                HorizontalOptions="Center" />
+
+            <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="10">
+                <Entry 
+                    x:Name="EmailEntry"
+                    Placeholder="Correo Electrónico / Usuario"
+                    PlaceholderColor="Gray"
+                    TextColor="White"
+                    Keyboard="Email" />
+            </Frame>
+
+            <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="10">
+                <Entry 
+                    x:Name="PasswordEntry"
+                    Placeholder="Contraseña"
+                    PlaceholderColor="Gray"
+                    TextColor="White"
+                    IsPassword="True" />
+            </Frame>
+
+            <Button 
+    x:Name="LoginButton"
+    Text="Ingresar"
+    FontAttributes="Bold"
+    TextColor="White"
+    BackgroundColor="#0A84FF"
+    CornerRadius="10"
+    Margin="0,20,0,0"
+    Clicked="OnLoginClicked"/>
+
+            <Button 
+                x:Name="RegisterButton"
+                Text="¿No tienes cuenta? Regístrate"
+                TextColor="White"
+                BackgroundColor="Transparent"
+                BorderColor="Transparent"
+                Clicked="OnRegisterClicked" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
