@@ -21,7 +21,7 @@
 		<Nullable>enable</Nullable>
 
 		<!-- Display name -->
-		<ApplicationTitle>ECommerceMaui</ApplicationTitle>
+		<ApplicationTitle>DarkPX Store</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.ecommercemaui</ApplicationId>
