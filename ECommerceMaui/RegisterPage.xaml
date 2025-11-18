@@ -20,7 +20,7 @@
 
             <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="10">
                 <Entry 
-                    x:Name="NameEntry"
+                    x:Name="FullNameEntry"
                     Placeholder="Nombre Completo"
                     PlaceholderColor="Gray"
                     TextColor="White"
@@ -59,7 +59,7 @@
                 Text="Registrarme"
                 FontAttributes="Bold"
                 TextColor="White"
-                BackgroundColor="#0A84FF" CornerRadius="10"
+                BackgroundColor="#1CF500" CornerRadius="10"
                 Margin="0,20,0,0"
                 Clicked="OnRegisterClicked"/>
         </VerticalStackLayout>

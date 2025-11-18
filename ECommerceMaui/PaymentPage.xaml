@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ECommerceMaui.PaymentPage"
+             Title="Realizar Pago"
+             BackgroundColor="#1C1C1E"
+             Shell.NavBarHasShadow="False"
+             Shell.BackgroundColor="#1C1C1E"
+             Shell.TitleColor="White"
+             Shell.ForegroundColor="White">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="15" VerticalOptions="Center">
+
+            <Label Text="DATOS DE LA TARJETA"
+                   FontSize="Header"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,20" />
+
+            <Border Background="#2C2C2E" Stroke="Transparent" StrokeShape="RoundRectangle 10">
+                <Entry Placeholder="Nombre en la tarjeta"
+                       PlaceholderColor="Gray"
+                       TextColor="White" />
+            </Border>
+
+            <Border Background="#2C2C2E" Stroke="Transparent" StrokeShape="RoundRectangle 10">
+                <Entry Placeholder="Número de Tarjeta (ej: 4242...)"
+                       PlaceholderColor="Gray"
+                       TextColor="White"
+                       Keyboard="Numeric"
+                       MaxLength="16" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+
+                <Border Grid.Column="0" Background="#2C2C2E" Stroke="Transparent" StrokeShape="RoundRectangle 10">
+                    <Entry Placeholder="MM/AA"
+                           PlaceholderColor="Gray"
+                           TextColor="White"
+                           Keyboard="Numeric"
+                           MaxLength="5" />
+                </Border>
+
+                <Border Grid.Column="1" Background="#2C2C2E" Stroke="Transparent" StrokeShape="RoundRectangle 10">
+                    <Entry Placeholder="CVV"
+                           PlaceholderColor="Gray"
+                           TextColor="White"
+                           Keyboard="Numeric"
+                           MaxLength="3" />
+                </Border>
+            </Grid>
+
+            <Button Text="Pagar Ahora (Simulación)"
+                    FontAttributes="Bold"
+                    TextColor="White"
+                    BackgroundColor="#1CF500"
+                    CornerRadius="10"
+                    Margin="0,30,0,0"
+                    Clicked="OnPayClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

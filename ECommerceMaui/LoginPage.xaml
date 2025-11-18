@@ -41,7 +41,7 @@
     Text="Ingresar"
     FontAttributes="Bold"
     TextColor="White"
-    BackgroundColor="#0A84FF"
+    BackgroundColor="#1CF500"
     CornerRadius="10"
     Margin="0,20,0,0"
     Clicked="OnLoginClicked"/>

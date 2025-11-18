@@ -14,6 +14,11 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -45,12 +50,79 @@
             <Button Text="Agregar al Carrito"
                     FontAttributes="Bold"
                     TextColor="White"
-                    BackgroundColor="#0A84FF"
+                    BackgroundColor="#1CF500"
                     CornerRadius="10"
                     Margin="20"
-                    Grid.Row="4"
-                    VerticalOptions="End"
+                    Grid.Row="4" 
+                    VerticalOptions="End" 
                     Clicked="OnAddToCartClicked" />
+
+            <BoxView Grid.Row="5" HeightRequest="1" Color="#2C2C2E" Margin="20,10" />
+
+            <VerticalStackLayout Grid.Row="6" Padding="20" Spacing="10">
+                <Label Text="Escribe tu reseña"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold" />
+
+                <Label Text="Calificación (1-5):" TextColor="Gray" />
+                <Slider x:Name="RatingSlider"
+                        Minimum="1"
+                        Maximum="5"
+                        Value="5"
+                        ThumbColor="#0A84FF"
+                        MinimumTrackColor="#0A84FF"
+                        MaximumTrackColor="Gray" />
+
+                <Editor x:Name="CommentEditor"
+                        Placeholder="Escribe tu comentario aquí..."
+                        PlaceholderColor="Gray"
+                        TextColor="White"
+                        BackgroundColor="#2C2C2E"
+                        HeightRequest="100"
+                        MaxLength="500" />
+
+                <Button Text="Enviar Reseña"
+                        BackgroundColor="#0A84FF"
+                        TextColor="White"
+                        CornerRadius="10"
+                        Clicked="OnSubmitReviewClicked" />
+            </VerticalStackLayout>
+
+            <BoxView Grid.Row="7" HeightRequest="1" Color="#2C2C2E" Margin="20,10" />
+
+            <Label Grid.Row="8" Text="Reseñas de Usuarios"
+                   TextColor="White"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Padding="20,0" />
+
+            <CollectionView Grid.Row="9" x:Name="ReviewsCollectionView" Margin="20"
+                            VerticalOptions="FillAndExpand" EmptyView="Aún no hay reseñas. ¡Sé el primero!">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="15" Margin="0,0,0,10"
+                               BackgroundColor="#2C2C2E"
+                               BorderColor="Transparent" CornerRadius="10">
+                            <VerticalStackLayout Spacing="5">
+                                <HorizontalStackLayout Spacing="10">
+                                    <Label Text="{Binding AuthorName}"
+                                           TextColor="White"
+                                           FontAttributes="Bold" />
+                                    <Label Text="{Binding Rating, StringFormat='{0}/5 ★'}"
+                                           TextColor="#0A84FF"
+                                           FontAttributes="Bold" />
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Comment}"
+                                       TextColor="Gray"
+                                       FontSize="14" />
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
         </Grid>
     </ScrollView>
 </ContentPage>

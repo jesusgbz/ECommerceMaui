@@ -2,8 +2,49 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ECommerceMaui.ProfilePage"
-             Title="ProfilePage">
-    <VerticalStackLayout BackgroundColor="#1C1C1E" VerticalOptions="Center">
-        <Label Text="Página de PERFIL (CRUD Usuarios)" TextColor="White" FontSize="24" HorizontalOptions="Center" />
+             Title="Perfil"
+             BackgroundColor="#1C1C1E">
+
+    <VerticalStackLayout Padding="30" Spacing="15" VerticalOptions="Center">
+
+        <Label Text="MI PERFIL"
+               FontSize="Header"
+               FontAttributes="Bold"
+               TextColor="White"
+               HorizontalOptions="Center"
+               Margin="0,0,0,30" />
+
+        <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="10" Padding="20">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Nombre:" TextColor="Gray" FontSize="14" />
+                <Label x:Name="FullNameLabel"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold" />
+
+                <Label Text="Correo Electrónico:" TextColor="Gray" FontSize="14" Margin="0,10,0,0" />
+                <Label x:Name="EmailLabel"
+                       TextColor="White"
+                       FontSize="18" />
+            </VerticalStackLayout>
+        </Frame>
+
+        <Button Text="Cerrar Sesión"
+                BackgroundColor="#1CF500"
+                TextColor="White"
+                FontAttributes="Bold"
+                CornerRadius="10"
+                Margin="0,30,0,0"
+                Clicked="OnLogoutClicked" />
+
+        <Button Text="Eliminar Mi Cuenta"
+                BackgroundColor="Transparent"
+                TextColor="Red"
+                BorderColor="Red"
+                BorderWidth="1"
+                CornerRadius="10"
+                Margin="0,10,0,0"
+                Clicked="OnDeleteClicked" />
+
     </VerticalStackLayout>
 </ContentPage>

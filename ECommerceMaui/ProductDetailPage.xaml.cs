@@ -1,4 +1,10 @@
-using ECommerceMaui.Models; // ¡Importante! Necesitamos el modelo
+using ECommerceMaui.Models;
+using System.Net.Http; // Puede que este ya esté o no, pero añádelo por si acaso
+using System.Diagnostics;
+// --- ¡AÑADE ESTAS DOS LÍNEAS! ---
+using ECommerceMaui.Servicios;
+using System.Collections.ObjectModel;
+using ECommerceMaui.Services; // Necesario para GetReviewsForProductAsync
 
 namespace ECommerceMaui;
 
@@ -7,7 +13,10 @@ public partial class ProductDetailPage : ContentPage
     private Product _product; // Variable para guardar el producto que recibimos
 
     // --- Usaremos la misma lógica de HttpClient para cargar la imagen ---
-    private static readonly HttpClient _httpClient = new HttpClient();
+    private static readonly HttpClient _httpClient = new();
+
+    private readonly DatabaseService _dbService;
+    private readonly AuthService _authService;
 
     /// <summary>
     /// Constructor que acepta un producto
@@ -17,7 +26,24 @@ public partial class ProductDetailPage : ContentPage
         InitializeComponent();
 
         _product = product; // Guardamos el producto
+        _dbService = new DatabaseService();
+        _authService = AuthService.Instance;
+
         LoadProductDetails(); // Cargamos los detalles en la UI
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await LoadReviewsAsync();
+    }
+
+    private async Task LoadReviewsAsync()
+    {
+        // Obtiene las reseñas desde la BBDD
+        var reviews = await _dbService.GetReviewsForProductAsync(_product.Id);
+        // Asigna la lista al CollectionView
+        ReviewsCollectionView.ItemsSource = reviews;
     }
 
     /// <summary>
@@ -60,8 +86,53 @@ public partial class ProductDetailPage : ContentPage
     /// </summary>
     private async void OnAddToCartClicked(object sender, EventArgs e)
     {
-        // Lógica futura: Agregar _product al carrito de compras
+        // --- ¡LÓGICA REAL! ---
+        // Llamamos al método AddItem de nuestra instancia Singleton global
+        Servicios.ShoppingCartService.Instance.AddItem(_product);
 
-        await DisplayAlert("Carrito", $"{_product.Name} ha sido agregado al carrito (Simulación).", "OK");
+        // Mantenemos la alerta como confirmación para el usuario
+        await DisplayAlert("Carrito", $"{_product.Name} ha sido agregado al carrito.", "OK");
+
+        
+        await Navigation.PopAsync();
+    }
+
+    private async void OnSubmitReviewClicked(object sender, EventArgs e)
+    {
+        var currentUser = _authService.CurrentUser;
+        if (currentUser == null)
+        {
+            await DisplayAlert("Error", "Debes iniciar sesión para dejar una reseña.", "OK");
+            return;
+        }
+
+        // 1. Obtener datos del formulario
+        var rating = (int)RatingSlider.Value;
+        var comment = CommentEditor.Text;
+
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            await DisplayAlert("Error", "Por favor, escribe un comentario.", "OK");
+            return;
+        }
+
+        // 2. Enviar a la BBDD
+        bool isSuccess = await _dbService.SubmitReviewAsync(_product.Id, currentUser.UserId, rating, comment);
+
+        if (isSuccess)
+        {
+            await DisplayAlert("¡Gracias!", "Tu reseña ha sido publicada.", "OK");
+
+            // 3. Limpiar formulario
+            RatingSlider.Value = 5;
+            CommentEditor.Text = string.Empty;
+
+            // 4. Recargar la lista de reseñas
+            await LoadReviewsAsync();
+        }
+        else
+        {
+            await DisplayAlert("Error", "No se pudo publicar tu reseña. Intenta más tarde.", "OK");
+        }
     }
 }

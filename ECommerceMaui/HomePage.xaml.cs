@@ -1,5 +1,6 @@
-using ECommerceMaui.Models; // ¡Importante! Necesitamos acceso a nuestra clase Product
+using ECommerceMaui.Models; //Necesitamos acceso a nuestra clase Product
 using System.Collections.ObjectModel; // Necesario para ObservableCollection
+using ECommerceMaui.Servicios;
 using System.Net.Http;
 using System.IO;
 using Microsoft.Maui.Controls;
@@ -8,117 +9,115 @@ namespace ECommerceMaui;
 
 public partial class HomePage : ContentPage
 {
-    // Una lista "observable" notifica a la UI (el XAML) si se agregan o quitan elementos.
+    // 1. Variable para nuestro servicio de base de datos
+    private readonly DatabaseService _dbService;
+    private static readonly HttpClient _httpClient = new HttpClient();
+    // 2. La lista de productos (ya no la inicializamos aquí)
     public ObservableCollection<Product> Products { get; set; }
 
     public HomePage()
     {
         InitializeComponent();
 
-        Products = new ObservableCollection<Product>();
-        ProductsCollectionView.ItemsSource = Products;
+        // 3. Creamos la instancia del servicio
+        _dbService = new DatabaseService();
 
-        LoadMockProducts(); // inicia la carga y descarga de imágenes
+
+        Products = new ObservableCollection<Product>();
+
+
+        ProductsCollectionView.ItemsSource = Products;
     }
 
     /// <summary>
-    /// Crea una lista de productos ficticios para mostrar en la UI y descarga las imágenes.
+    /// Este método se ejecuta CADA VEZ que la página aparece en pantalla.
+    /// Es el lugar perfecto para cargar datos frescos.
     /// </summary>
-    private async void LoadMockProducts()
+    protected override async void OnAppearing()
     {
-        // --- INICIO PRODUCTOS FICTICIOS ---
-        var mock = new[]
+        base.OnAppearing();
+        await LoadProductsFromDbAsync();
+    }
+
+    /// <summary>
+    /// Método (reemplazo del 'LoadMockProducts')
+    /// que llama al servicio de base de datos.
+    /// </summary>
+    private async Task LoadProductsFromDbAsync()
+    {
+        Products.Clear();
+
+        var productsFromDb = await _dbService.GetProductsAsync();
+
+        if (productsFromDb != null)
         {
-            new Product
+            foreach (var product in productsFromDb)
             {
-                Id = 1,
-                Name = "Laptop Ejecutivo",
-                Description = "Laptop potente para negocios.",
-                Price = 1499.99,
-                ImageUrl = "https://placehold.co/170x120.png?text=Laptop", // force PNG
-                Stock = 10
-            },
-            new Product
-            {
-                Id = 2,
-                Name = "Smartphone Premium",
-                Description = "El último smartphone del mercado.",
-                Price = 999.50,
-                ImageUrl = "https://placehold.co/170x120.png?text=Smartphone", // force PNG
-                Stock = 25
-            },
-            new Product
-            {
-                Id = 3,
-                Name = "Audífonos Pro",
-                Description = "Cancelación de ruido activa.",
-                Price = 249.00,
-                ImageUrl = "https://placehold.co/170x120.png?text=Audifonos", // force PNG
-                Stock = 50
-            },
-            new Product
-            {
-                Id = 4,
-                Name = "Smartwatch Elite",
-                Description = "Monitoreo de salud avanzado.",
-                Price = 399.00,
-                ImageUrl = "https://placehold.co/170x120.png?text=Smartwatch", // force PNG
-                Stock = 15
-            }
-        };
-        // --- FIN PRODUCTOS FICTICIOS ---
+                // 1. Añadimos el producto (con su texto) a la lista.
+                // La UI lo mostrará inmediatamente, pero sin imagen.
+                Products.Add(product);
 
-        // Add items to the existing ObservableCollection so bindings remain valid
-        foreach (var p in mock)
-            Products.Add(p);
-
-        // Download images
-        using var httpClient = new HttpClient();
-        // Prefer PNG to avoid servers sending WebP (which WinUI may not decode)
-        httpClient.DefaultRequestHeaders.Accept.Clear();
-        httpClient.DefaultRequestHeaders.Accept.ParseAdd("image/png");
-        httpClient.DefaultRequestHeaders.Accept.ParseAdd("image/*;q=0.8");
-
-        foreach (var product in Products)
-        {
-            if (string.IsNullOrWhiteSpace(product.ImageUrl))
-                continue;
-
-            try
-            {
-                var bytes = await httpClient.GetByteArrayAsync(product.ImageUrl);
-                // ImageSource.FromStream must return a new stream each time it's requested.
-                product.ImageSource = ImageSource.FromStream(() => new MemoryStream(bytes));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error downloading image '{product.ImageUrl}': {ex.Message}");
-                // Optional: set a local fallback image if you include one in the project
-                // product.ImageSource = ImageSource.FromFile("Assets/Images/fallback.png");
+                // 2. Iniciamos la descarga de la imagen para este producto
+                //    en segundo plano. No esperamos (no usamos 'await' aquí)
+                //    para que la UI no se bloquee.
+                _ = LoadProductImageAsync(product);
             }
         }
     }
+/// <summary>
+/// NUEVO MÉTODO: Carga la imagen para un producto específico
+/// usando la lógica de HttpClient (la solución de Copilot).
+/// </summary>
+    private async Task LoadProductImageAsync(Product product)
+    {
+        // Forzamos PNG
+        string imageUrl = product.ImageUrl.EndsWith(".png") ? product.ImageUrl : $"{product.ImageUrl}.png";
+
+        try
+        {
+            _httpClient.DefaultRequestHeaders.Accept.Clear();
+            _httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("image/png"));
+
+            var imageBytes = await _httpClient.GetByteArrayAsync(imageUrl);
+
+            // 3. Cuando se descarga, la asignamos a la propiedad 'ProductImageSource'
+            product.ProductImageSource = ImageSource.FromStream(() => new MemoryStream(imageBytes));
+
+            // 4. Gracias a INotifyPropertyChanged, la UI se
+            //    actualizará automáticamente en este momento.
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error cargando imagen para {product.Name}: {ex.Message}");
+            product.ProductImageSource = "dotnet_bot.png"; // Imagen de fallback
+        }
+    }
+
 
     /// <summary>
     /// Se ejecuta cuando el usuario selecciona un producto de la lista.
+    /// (¡Ahora también registra la vista!)
     /// </summary>
-    
     private async void OnProductSelected(object sender, SelectionChangedEventArgs e)
     {
-        // 1. Obtenemos el producto que fue seleccionado
-        // e.CurrentSelection es una lista, tomamos el primer (y único) ítem
         var product = e.CurrentSelection.FirstOrDefault() as Product;
-
-        // 2. Verificamos que no sea nulo (por seguridad)
         if (product == null)
             return;
 
-        // 3. ¡Navegamos! "Empujamos" la nueva página de detalle
-        //    Pasamos el 'product' al constructor que creamos en el paso anterior.
+        // --- ¡NUEVA LÓGICA DE HISTORIAL! ---
+        var currentUser = Services.AuthService.Instance.CurrentUser;
+        if (currentUser != null)
+        {
+            // Llamamos al método de la BBDD en segundo plano
+            // No usamos "await" para no retrasar la navegación
+            _ = _dbService.LogProductViewAsync(currentUser.UserId, product.Id);
+        }
+        // --- FIN DE LÓGICA DE HISTORIAL ---
+
+        // Navegamos a la página de detalle (sin cambios)
         await Navigation.PushAsync(new ProductDetailPage(product));
 
-        // 4. Limpiamos la selección
-        //    (Para que el ítem no se quede "marcado" y se pueda volver a presionar)
+        // Limpiamos la selección (sin cambios)
         ((CollectionView)sender).SelectedItem = null;
     }
 }

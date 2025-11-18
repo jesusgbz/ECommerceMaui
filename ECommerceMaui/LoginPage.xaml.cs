@@ -1,34 +1,61 @@
-namespace ECommerceMaui; // <-- ¡Nombre del proyecto actualizado!
+using ECommerceMaui.Models;
+using ECommerceMaui.Servicios; // ¡Importante!
+
+namespace ECommerceMaui;
 
 public partial class LoginPage : ContentPage
 {
-	public LoginPage()
-	{
-		InitializeComponent();
-	}
+    private readonly DatabaseService _dbService;
 
-    /// <summary>
-    /// Método que se ejecuta cuando el usuario presiona el botón "Regístrate"
-    /// </summary>
-    private async void OnRegisterClicked(object sender, EventArgs e)
+    public LoginPage()
     {
-        // Navegamos a la página de Registro
-        // PushAsync "empuja" la nueva página encima de la actual
-        await Navigation.PushAsync(new RegisterPage());
+        InitializeComponent();
+        _dbService = new DatabaseService();
     }
 
     /// <summary>
     /// Se ejecuta al presionar "Ingresar".
-    /// Simula un login exitoso y carga la página principal de la tienda (AppShell).
+    /// (Lógica actualizada para guardar la sesión)
     /// </summary>
-    private void OnLoginClicked(object sender, EventArgs e)
+    private async void OnLoginClicked(object sender, EventArgs e)
     {
-        // --- SIMULACIÓN DE LOGIN ---
-        // Aquí iría la lógica de validación contra la base de datos
-        // (ej. if(email == "admin" && pass == "123"))
+        var email = EmailEntry.Text;
+        var password = PasswordEntry.Text;
 
-        // Si el login es exitoso, cambiamos la página principal de la aplicación.
-        // Esto "descarta" la página de Login y carga la AppShell.
-        Application.Current.MainPage = new AppShell();
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            await DisplayAlert("Error", "Por favor, ingresa correo y contraseña.", "OK");
+            return;
+        }
+
+        // 3. ¡El cambio! Ya no esperamos un 'bool', esperamos un 'User'
+        User loggedInUser = await _dbService.LoginUserAsync(email, password);
+
+        // 4. Verificamos si el resultado es nulo
+        if (loggedInUser != null)
+        {
+            // ¡Login Exitoso!
+
+            // 5. Guardamos al usuario en nuestro servicio Singleton global
+            Services.AuthService.Instance.Login(loggedInUser);
+
+            // Reemplazamos la página actual (Login) por la tienda (AppShell).
+            Application.Current.MainPage = new AppShell();
+        }
+        else
+        {
+            // Error
+            await DisplayAlert("Login Fallido", "Correo o contraseña incorrectos. Por favor, intenta de nuevo.", "OK");
+            PasswordEntry.Text = string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Se ejecuta al presionar "Regístrate".
+    /// (Esta no cambia)
+    /// </summary>
+    private async void OnRegisterClicked(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new RegisterPage());
     }
 }

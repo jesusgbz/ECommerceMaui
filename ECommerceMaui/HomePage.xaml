@@ -17,14 +17,17 @@
 
         <CollectionView.ItemTemplate>
             <DataTemplate>
-                <Frame Padding="0" CornerRadius="15" BackgroundColor="#2C2C2E"
-                       HeightRequest="220" WidthRequest="170">
+                <Border StrokeShape="RoundRectangle 15"
+                        BackgroundColor="#2C2C2E"
+                        HeightRequest="220"
+                        WidthRequest="170"
+                        Padding="0">
 
                     <VerticalStackLayout Spacing="5">
-                        <Image Source="{Binding ImageSource}" 
-                               Aspect="AspectFill"
-                               HeightRequest="120"
-                               WidthRequest="170" />
+                        <Image Source="{Binding ProductImageSource}" 
+                                Aspect="AspectFill"
+                                HeightRequest="120"
+                                WidthRequest="170" />
 
                         <Label Text="{Binding Name}" 
                                TextColor="White"
@@ -37,7 +40,7 @@
                                TextColor="#0A84FF" FontSize="14"
                                Margin="10,0,10,10" />
                     </VerticalStackLayout>
-                </Frame>
+                </Border>
             </DataTemplate>
         </CollectionView.ItemTemplate>
 
