@@ -7,12 +7,16 @@
 
     <VerticalStackLayout Padding="30" Spacing="15" VerticalOptions="Center">
 
-        <Label Text="MI PERFIL"
-               FontSize="Header"
-               FontAttributes="Bold"
-               TextColor="White"
+        <Image Source="mi_logo_ui.png"
+               HeightRequest="80" 
+               HorizontalOptions="Center" />
+
+        <Label Text="MI PERFIL" />
+        <Image x:Name="UserAvatarImage"
+               HeightRequest="100"
+               WidthRequest="100"
                HorizontalOptions="Center"
-               Margin="0,0,0,30" />
+               Margin="0,0,0,10" />
 
         <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="10" Padding="20">
             <VerticalStackLayout Spacing="10">

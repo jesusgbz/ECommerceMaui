@@ -23,7 +23,7 @@
             </Grid.RowDefinitions>
 
             <Image x:Name="ProductImage"
-                   Aspect="AspectFill"
+                   Aspect="AspectFit"
                    HeightRequest="300"
                    BackgroundColor="#2C2C2E"
                    Grid.Row="0" />

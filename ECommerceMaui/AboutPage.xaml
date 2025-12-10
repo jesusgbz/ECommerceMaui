@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ECommerceMaui.AboutPage"
+             Title="Sobre Nosotros"
+             BackgroundColor="#1C1C1E">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Image Source="mi_logo_ui.png" 
+                   HeightRequest="100" 
+                   HorizontalOptions="Center"/>
+
+            <Label Text="DARKPX STORE"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   Margin="0,-10,0,10"/>
+
+            <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="15" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Nuestra Historia" TextColor="#0A84FF" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Fundada en 2024 como una iniciativa académica de alto nivel, DarkPX Store nació con el objetivo de revolucionar la experiencia de compra móvil. Lo que comenzó como un proyecto de aula se transformó en una plataforma robusta, segura y vanguardista."
+                           TextColor="Gray" FontSize="14"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="15" Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Misión y Visión" TextColor="#0A84FF" FontSize="18" FontAttributes="Bold"/>
+                    <Label Text="Misión:" TextColor="White" FontAttributes="Bold"/>
+                    <Label Text="Proveer tecnología de punta a través de una interfaz oscura, elegante y eficiente." TextColor="Gray" FontSize="14"/>
+
+                    <BoxView HeightRequest="1" Color="#444" Margin="0,5"/>
+
+                    <Label Text="Visión:" TextColor="White" FontAttributes="Bold"/>
+                    <Label Text="Ser el referente universitario en desarrollo de software multiplataforma y gestión de bases de datos." TextColor="Gray" FontSize="14"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Nuestro Equipo" TextColor="White" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,10,0,0"/>
+
+            <CollectionView x:Name="TeamCollectionView" HeightRequest="420">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="2" 
+                                     HorizontalItemSpacing="15" VerticalItemSpacing="15"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="15" Padding="10">
+                            <VerticalStackLayout Spacing="5" VerticalOptions="Center">
+                                <Image Source="{Binding ImageUrl}" 
+                                       HeightRequest="110" WidthRequest="110" 
+                                       Aspect="AspectFill">
+
+                                    <Image.Clip>
+                                        <EllipseGeometry Center="55,55" RadiusX="55" RadiusY="55" />
+                                    </Image.Clip>
+
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            Tapped="OnMemberImageTapped" 
+                                            CommandParameter="{Binding .}" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+
+                                <Label Text="{Binding Name}" 
+                                       TextColor="White" 
+                                       FontAttributes="Bold" 
+                                       HorizontalOptions="Center"/>
+
+                                <Label Text="{Binding Role}" 
+                                       TextColor="#0A84FF" 
+                                       FontSize="12" 
+                                       HorizontalOptions="Center"/>
+
+                                <Label Text="{Binding Description}" 
+                                       TextColor="Gray" 
+                                       FontSize="10" 
+                                       HorizontalTextAlignment="Center"
+                                       MaxLines="3"
+                                       LineBreakMode="TailTruncation"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

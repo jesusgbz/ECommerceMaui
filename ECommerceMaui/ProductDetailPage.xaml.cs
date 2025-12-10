@@ -1,7 +1,7 @@
-using ECommerceMaui.Models;
-using System.Net.Http; // Puede que este ya estÈ o no, pero aÒ·delo por si acaso
+Ôªøusing ECommerceMaui.Models;
+using System.Net.Http; // Puede que este ya est√© o no, pero a√±√°delo por si acaso
 using System.Diagnostics;
-// --- °A—ADE ESTAS DOS LÕNEAS! ---
+// --- ¬°A√ëADE ESTAS DOS L√çNEAS! ---
 using ECommerceMaui.Servicios;
 using System.Collections.ObjectModel;
 using ECommerceMaui.Services; // Necesario para GetReviewsForProductAsync
@@ -12,7 +12,7 @@ public partial class ProductDetailPage : ContentPage
 {
     private Product _product; // Variable para guardar el producto que recibimos
 
-    // --- Usaremos la misma lÛgica de HttpClient para cargar la imagen ---
+    // --- Usaremos la misma l√≥gica de HttpClient para cargar la imagen ---
     private static readonly HttpClient _httpClient = new();
 
     private readonly DatabaseService _dbService;
@@ -40,7 +40,7 @@ public partial class ProductDetailPage : ContentPage
 
     private async Task LoadReviewsAsync()
     {
-        // Obtiene las reseÒas desde la BBDD
+        // Obtiene las rese√±as desde la BBDD
         var reviews = await _dbService.GetReviewsForProductAsync(_product.Id);
         // Asigna la lista al CollectionView
         ReviewsCollectionView.ItemsSource = reviews;
@@ -56,7 +56,7 @@ public partial class ProductDetailPage : ContentPage
         ProductPriceLabel.Text = $"${_product.Price:F2}";
         ProductDescriptionLabel.Text = _product.Description;
 
-        // --- LÛgica de carga de imagen (soluciÛn de Copilot) ---
+        // --- L√≥gica de carga de imagen (soluci√≥n de Copilot) ---
         // Forzamos PNG
         string imageUrl = _product.ImageUrl.EndsWith(".png") ? _product.ImageUrl : $"{_product.ImageUrl}.png";
 
@@ -82,19 +82,43 @@ public partial class ProductDetailPage : ContentPage
 
     /// <summary>
     /// Se ejecuta al presionar "Agregar al Carrito".
-    /// (Por ahora, solo simulaciÛn)
+    /// (Por ahora, solo simulaci√≥n)
     /// </summary>
     private async void OnAddToCartClicked(object sender, EventArgs e)
     {
-        // --- °L”GICA REAL! ---
-        // Llamamos al mÈtodo AddItem de nuestra instancia Singleton global
+        // 1. Agregar al Singleton del Carrito
         Servicios.ShoppingCartService.Instance.AddItem(_product);
 
-        // Mantenemos la alerta como confirmaciÛn para el usuario
-        await DisplayAlert("Carrito", $"{_product.Name} ha sido agregado al carrito.", "OK");
+        // 2. Mostrar men√∫ de opciones (Action Sheet)
+        // Par√°metros: T√≠tulo, Bot√≥n Cancelar, Bot√≥n Destructivo (null), Opciones...
+        string action = await DisplayActionSheet(
+            "‚úÖ Producto Agregado",
+            "Seguir Comprando", 
+            null, 
+            "Ir al Carrito", 
+            "Pagar Ahora");
 
-        
-        await Navigation.PopAsync();
+        // 3. Manejar la decisi√≥n del usuario
+        switch (action)
+        {
+            case "Ir al Carrito":
+                // Cambiamos la pesta√±a activa del Shell para ir al Carrito
+                // Usamos la ruta absoluta "//ShoppingCartPage"
+                await Shell.Current.GoToAsync($"//{nameof(ShoppingCartPage)}");
+                
+                // Opcional: "Limpiamos" la navegaci√≥n de la pesta√±a de Inicio para que al volver no siga en el detalle
+                await Navigation.PopToRootAsync(); 
+                break;
+
+            case "Pagar Ahora":
+                // Navegamos directamente a la pantalla de pago (sin pasar por la vista del carrito)
+                await Navigation.PushAsync(new PaymentPage());
+                break;
+
+            case "Seguir Comprando":
+                // No hacemos nada, el usuario se queda en el detalle del producto
+                break;
+        }
     }
 
     private async void OnSubmitReviewClicked(object sender, EventArgs e)
@@ -102,7 +126,7 @@ public partial class ProductDetailPage : ContentPage
         var currentUser = _authService.CurrentUser;
         if (currentUser == null)
         {
-            await DisplayAlert("Error", "Debes iniciar sesiÛn para dejar una reseÒa.", "OK");
+            await DisplayAlert("Error", "Debes iniciar sesi√≥n para dejar una rese√±a.", "OK");
             return;
         }
 
@@ -121,18 +145,18 @@ public partial class ProductDetailPage : ContentPage
 
         if (isSuccess)
         {
-            await DisplayAlert("°Gracias!", "Tu reseÒa ha sido publicada.", "OK");
+            await DisplayAlert("¬°Gracias!", "Tu rese√±a ha sido publicada.", "OK");
 
             // 3. Limpiar formulario
             RatingSlider.Value = 5;
             CommentEditor.Text = string.Empty;
 
-            // 4. Recargar la lista de reseÒas
+            // 4. Recargar la lista de rese√±as
             await LoadReviewsAsync();
         }
         else
         {
-            await DisplayAlert("Error", "No se pudo publicar tu reseÒa. Intenta m·s tarde.", "OK");
+            await DisplayAlert("Error", "No se pudo publicar tu rese√±a. Intenta m√°s tarde.", "OK");
         }
     }
 }

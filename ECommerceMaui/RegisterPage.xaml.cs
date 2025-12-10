@@ -14,8 +14,7 @@ public partial class RegisterPage : ContentPage
     }
 
     /// <summary>
-    /// Se ejecuta al presionar "Crear Cuenta".
-    /// ¡Ahora con lógica real!
+    /// "Crear Cuenta"
     /// </summary>
     private async void OnRegisterClicked(object sender, EventArgs e)
     {
@@ -42,8 +41,9 @@ public partial class RegisterPage : ContentPage
         // 3. Cifrar la contraseña
         var passwordHash = PasswordHelper.HashPassword(password);
 
+  
         // 4. Intentar registrar en la BBDD
-        bool isSuccess = await _dbService.RegisterUserAsync(email, fullName, passwordHash);
+        bool isSuccess = await _dbService.RegisterUserAsync(email, fullName, passwordHash, _selectedAvatarId);
 
         // 5. Mostrar resultado
         if (isSuccess)
@@ -69,4 +69,23 @@ public partial class RegisterPage : ContentPage
         // Simplemente regresamos a la página anterior (Login).
         await Navigation.PopAsync();
     }
+
+    private int _selectedAvatarId = 1; // Por defecto el 1
+
+    private void OnAvatarSelected(object sender, EventArgs e)
+    {
+        var button = sender as ImageButton;
+        _selectedAvatarId = int.Parse(button.CommandParameter.ToString());
+
+        // Visual feedback (resetear bordes y marcar el seleccionado)
+        Avatar1.BorderColor = Colors.Transparent;
+        Avatar2.BorderColor = Colors.Transparent;
+        Avatar3.BorderColor = Colors.Transparent;
+        Avatar4.BorderColor = Colors.Transparent;
+
+        button.BorderColor = Color.FromArgb("#0A84FF"); // Azul seleccionado
+    }
+
+    // ... Y en OnRegisterClicked, actualiza la llamada:
+    // await _dbService.RegisterUserAsync(email, fullName, passwordHash, _selectedAvatarId);
 }

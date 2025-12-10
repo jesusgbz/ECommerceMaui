@@ -5,32 +5,30 @@
              Title="Carrito"
              BackgroundColor="#1C1C1E">
 
-    <Grid RowDefinitions="*, Auto" Padding="10">
+    <Grid RowDefinitions="*, Auto, Auto" Padding="10">
 
         <CollectionView x:Name="CartCollectionView" Grid.Row="0">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Padding="10" ColumnDefinitions="Auto, *, Auto">
+                    <Frame Padding="10" Margin="0,0,0,10" BackgroundColor="#2C2C2E" BorderColor="Transparent" CornerRadius="10">
+                        <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="10">
 
-                        <Image Source="{Binding ImageUrl, StringFormat='https://placehold.co/80x80.png?text=IMG'}" 
-                               HeightRequest="80" WidthRequest="80"
-                               Grid.Column="0" />
+                            <Image Source="{Binding ProductImageSource}" 
+                                   Aspect="AspectFill" HeightRequest="60" WidthRequest="60" Grid.Column="0"/>
 
-                        <VerticalStackLayout Grid.Column="1" Padding="10" VerticalOptions="Center">
-                            <Label Text="{Binding Name}" 
-                                   TextColor="White" 
-                                   FontAttributes="Bold" />
-                            <Label Text="{Binding Description}" 
-                                   TextColor="Gray" 
-                                   FontSize="12" />
-                        </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                <Label Text="{Binding Name}" TextColor="White" FontAttributes="Bold" LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding Price, StringFormat='${0:F2}'}" TextColor="#0A84FF"/>
+                            </VerticalStackLayout>
 
-                        <Label Text="{Binding Price, StringFormat='${0:F2}'}" 
-                               TextColor="#0A84FF"
-                               VerticalOptions="Center" 
-                               HorizontalOptions="End"
-                               Grid.Column="2" />
-                    </Grid>
+                            <ImageButton Source="https://img.icons8.com/ios-glyphs/30/FA5252/multiply.png"
+                                         HeightRequest="30" WidthRequest="30"
+                                         BackgroundColor="Transparent"
+                                         Grid.Column="3"
+                                         Clicked="OnRemoveItemClicked"
+                                         CommandParameter="{Binding .}"/>
+                        </Grid>
+                    </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
@@ -45,6 +43,16 @@
         </CollectionView>
 
         <Button Grid.Row="1"
+                Text="Vaciar Carrito"
+                TextColor="#FF453A"
+                BackgroundColor="Transparent"
+                BorderColor="#FF453A"
+                BorderWidth="1"
+                CornerRadius="10"
+                Margin="10,0,10,10"
+                Clicked="OnClearCartClicked"/>
+
+        <Button Grid.Row="2"
                 Text="Proceder al Pago (Simulación)"
                 BackgroundColor="#1CF500"
                 TextColor="White"

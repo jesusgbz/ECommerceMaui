@@ -16,21 +16,27 @@
 
     <TabBar>
         <ShellContent
-            Title="Inicio"
+            Title="Home"
             ContentTemplate="{DataTemplate local:HomePage}"
             Route="HomePage"
             Icon="dotnet_bot.png"/>
         <ShellContent
-            Title="Carrito"
+            Title="Cart"
             ContentTemplate="{DataTemplate local:ShoppingCartPage}"
             Route="ShoppingCartPage"
             Icon="dotnet_bot.png"/>
 
         <ShellContent
-            Title="Perfil"
+            Title="Profile"
             ContentTemplate="{DataTemplate local:ProfilePage}"
             Route="ProfilePage"
             Icon="dotnet_bot.png"/>
+
+        <ShellContent
+            Title="About us"
+            ContentTemplate="{DataTemplate local:AboutPage}"
+            Route="AboutPage"
+            Icon="dotnet_bot.png" />
     </TabBar>
 
 </Shell>

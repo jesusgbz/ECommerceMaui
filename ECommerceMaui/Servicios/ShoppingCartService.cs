@@ -40,7 +40,10 @@ namespace ECommerceMaui.Servicios
 
 
         public void RemoveItem(Product product) {
-            CartItems.Remove(product);
+            if (CartItems.Contains(product))
+            {
+                CartItems.Remove(product);
+                }
         }
         public void ClearCartItems() {
             CartItems.Clear();

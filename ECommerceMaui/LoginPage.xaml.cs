@@ -28,7 +28,7 @@ public partial class LoginPage : ContentPage
             return;
         }
 
-        // 3. ¡El cambio! Ya no esperamos un 'bool', esperamos un 'User'
+        // 3. No esperamos un 'bool', esperamos un 'User'
         User loggedInUser = await _dbService.LoginUserAsync(email, password);
 
         // 4. Verificamos si el resultado es nulo

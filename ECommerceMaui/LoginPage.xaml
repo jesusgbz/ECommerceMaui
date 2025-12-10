@@ -11,6 +11,12 @@
             Spacing="15" 
             VerticalOptions="Center">
 
+            <Image Source="mi_logo_ui.png"
+            HeightRequest="120"
+            WidthRequest="120"
+            HorizontalOptions="Center"
+            Margin="0,0,0,20" />
+
             <Label 
                 Text="DarkPX Store"
                 FontSize="Header"

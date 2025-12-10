@@ -5,45 +5,68 @@
              Title="Inicio"
              BackgroundColor="#1C1C1E">
 
-    <CollectionView x:Name="ProductsCollectionView"
-                    Margin="10"
-                    SelectionMode="Single" 
-                    SelectionChanged="OnProductSelected">
+    <Grid RowDefinitions="Auto, Auto, *">
 
-        <CollectionView.ItemsLayout>
-            <GridItemsLayout Orientation="Vertical" Span="2" 
-                             HorizontalItemSpacing="10" VerticalItemSpacing="10" />
-        </CollectionView.ItemsLayout>
+        <SearchBar Grid.Row="0"
+                   Placeholder="Buscar productos..."
+                   PlaceholderColor="Gray"
+                   TextColor="White"
+                   BackgroundColor="#2C2C2E"
+                   CancelButtonColor="White"
+                   Margin="10,10,10,0"
+                   TextChanged="OnSearchBarTextChanged" />
 
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <Border StrokeShape="RoundRectangle 15"
-                        BackgroundColor="#2C2C2E"
-                        HeightRequest="220"
-                        WidthRequest="170"
-                        Padding="0">
+        <CollectionView Grid.Row="1" 
+                        x:Name="CategoriesCollectionView"
+                        HeightRequest="60"
+                        SelectionMode="Single"
+                        SelectionChanged="OnCategorySelectionChanged"
+                        Margin="10">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BackgroundColor="#2C2C2E" Padding="15,10" CornerRadius="20" BorderColor="Transparent">
+                        <Label Text="{Binding Name}" TextColor="White" FontAttributes="Bold" />
 
-                    <VerticalStackLayout Spacing="5">
-                        <Image Source="{Binding ProductImageSource}" 
-                                Aspect="AspectFill"
-                                HeightRequest="120"
-                                WidthRequest="170" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal" />
+                                <VisualState Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="#0A84FF" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-                        <Label Text="{Binding Name}" 
-                               TextColor="White"
-                               FontSize="16"
-                               FontAttributes="Bold"
-                               Margin="10,5,10,0"
-                               LineBreakMode="TailTruncation" />
+        <CollectionView Grid.Row="2" 
+                        x:Name="ProductsCollectionView"
+                        Margin="10"
+                        SelectionMode="Single"
+                        SelectionChanged="OnProductSelected">
 
-                        <Label Text="{Binding Price, StringFormat='${0:F2}'}"
-                               TextColor="#0A84FF" FontSize="14"
-                               Margin="10,0,10,10" />
-                    </VerticalStackLayout>
-                </Border>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" 
+                                 HorizontalItemSpacing="10" VerticalItemSpacing="10" />
+            </CollectionView.ItemsLayout>
 
-    </CollectionView>
-
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="0" CornerRadius="15" BackgroundColor="#2C2C2E" HeightRequest="220">
+                        <VerticalStackLayout Spacing="5">
+                            <Image Source="{Binding ProductImageSource}" Aspect="AspectFill" HeightRequest="120" WidthRequest="170" />
+                            <Label Text="{Binding Name}" TextColor="White" FontSize="16" FontAttributes="Bold" Margin="10,5,10,0" LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding Price, StringFormat='${0:F2}'}" TextColor="#0A84FF" FontSize="14" Margin="10,0,10,10" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

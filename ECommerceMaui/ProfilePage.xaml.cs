@@ -38,12 +38,9 @@ public partial class ProfilePage : ContentPage
         {
             FullNameLabel.Text = currentUser.FullName;
             EmailLabel.Text = currentUser.Email;
-        }
-        else
-        {
-            // Esto no debería pasar si la lógica del login es correcta
-            FullNameLabel.Text = "Error";
-            EmailLabel.Text = "No se pudo cargar el usuario";
+
+            // Cargar el avatar
+            UserAvatarImage.Source = currentUser.AvatarUrl;
         }
     }
 

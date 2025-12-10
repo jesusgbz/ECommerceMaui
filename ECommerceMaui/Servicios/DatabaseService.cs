@@ -15,7 +15,8 @@ namespace ECommerceMaui.Servicios
             "Database=ba1gi7jlgly7zrbpnsax;" +
             "User=uf14aujm4gsrloba;" +
             "Password=UP8DB6VBmnAm4QdusGBA;" +
-            "SslMode=Required"; // Necesario para conexiones locales sin SSL
+            "SslMode=Required;" + // Necesario para conexiones locales sin SSL
+            "Pooling=false;";
 
          /// <summary>
         /// Obtiene todos los productos de la base de datos.
@@ -47,7 +48,8 @@ namespace ECommerceMaui.Servicios
                         Description = reader.GetString("description"),
                         Price = reader.GetDouble("price"), // C# usa double, SQL usa decimal
                         ImageUrl = reader.GetString("image_url"),
-                        Stock = reader.GetInt32("stock")
+                        Stock = reader.GetInt32("stock"),
+                        CategoryId = reader.IsDBNull(reader.GetOrdinal("category_id")) ? 0 : reader.GetInt32("category_id")
                     };
                     products.Add(product);
                 }
@@ -70,45 +72,29 @@ namespace ECommerceMaui.Servicios
         /// Registra un nuevo usuario en la base de datos.
         /// </summary>
         /// <returns>True si fue exitoso, False si falló (ej. email ya existe).</returns>
-        public async Task<bool> RegisterUserAsync(string email, string fullName, string passwordHash)
+        public async Task<bool> RegisterUserAsync(string email, string fullName, string passwordHash, int avatarId)
         {
             try
             {
-                using var connection = new MySqlConnection(_connectionString);
-                await connection.OpenAsync();
-
-                // Comando SQL para insertar
-                var command = new MySqlCommand(
-                    "INSERT INTO users (email, full_name, password_hash) VALUES (@Email, @FullName, @PasswordHash)",
-                    connection);
-
-                // Usamos parámetros para evitar Inyección SQL
-                command.Parameters.AddWithValue("@Email", email);
-                command.Parameters.AddWithValue("@FullName", fullName);
-                command.Parameters.AddWithValue("@PasswordHash", passwordHash);
-
-                // Ejecutamos el comando
-                int rowsAffected = await command.ExecuteNonQueryAsync();
-
-                // Si se afectó una fila (se insertó 1 usuario), retorna true
-                return rowsAffected > 0;
-            }
-            catch (MySqlException ex)
-            {
-                // El código 1062 es "Entrada duplicada" (email ya existe)
-                if (ex.Number == 1062)
+                using (var connection = new MySqlConnection(_connectionString))
                 {
-                    Debug.WriteLine("Error de registro: El email ya existe.");
+                    await connection.OpenAsync();
+                    var command = new MySqlCommand(
+                        "INSERT INTO users (email, full_name, password_hash, avatar_id) VALUES (@Email, @FullName, @PasswordHash, @AvatarId)",
+                        connection);
+
+                    command.Parameters.AddWithValue("@Email", email);
+                    command.Parameters.AddWithValue("@FullName", fullName);
+                    command.Parameters.AddWithValue("@PasswordHash", passwordHash);
+                    command.Parameters.AddWithValue("@AvatarId", avatarId); // <-- Nuevo
+
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
                 }
-                else
-                {
-                    Debug.WriteLine($"Error de MySQL al registrar: {ex.Message}");
-                }
-                return false;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error general al registrar: {ex.Message}");
+                Debug.WriteLine($"Error al registrar: {ex.Message}");
                 return false;
             }
         }
@@ -116,7 +102,8 @@ namespace ECommerceMaui.Servicios
         /// <summary>
         /// Verifica las credenciales Y devuelve los datos del usuario si es exitoso.
         /// </summary>
-        /// <returns>Un objeto 'User' si el login es exitoso, 'null' si no.</returns>
+        
+        
         public async Task<User> LoginUserAsync(string email, string plainPassword)
         {
             try
@@ -127,8 +114,8 @@ namespace ECommerceMaui.Servicios
 
                     // 1. Buscamos al usuario por su email y traemos su info
                     var command = new MySqlCommand(
-                        "SELECT user_id, full_name, password_hash FROM users WHERE email = @Email",
-                        connection);
+                            "SELECT user_id, full_name, password_hash, avatar_id FROM users WHERE email = @Email",
+                            connection);
                     command.Parameters.AddWithValue("@Email", email);
 
                     using (var reader = await command.ExecuteReaderAsync())
@@ -144,16 +131,16 @@ namespace ECommerceMaui.Servicios
                             // 4. Comparamos los hashes
                             if (storedHash == providedHash)
                             {
-                                // ¡Contraseña correcta! Creamos y devolvemos el objeto User
                                 var user = new User
                                 {
                                     UserId = reader.GetInt32("user_id"),
-                                    Email = email, // Ya lo tenemos
-                                    FullName = reader.GetString("full_name")
+                                    Email = email,
+                                    FullName = reader.GetString("full_name"),
+                                    AvatarId = reader.GetInt32("avatar_id") // <-- Nuevo: Leemos el avatar
                                 };
                                 return user;
-                            }
-                        }
+                         }
+                      }
                     }
 
                     // Si llegamos aquí, es porque el usuario no se encontró o la contraseña fue incorrecta
@@ -308,24 +295,17 @@ namespace ECommerceMaui.Servicios
             }
         }
 
-        public async Task<bool> UpdateStockAsync(ObservableCollection<Product> cartItems)
+        /// <summary>
+        /// Procesa la compra completa: Crea la orden, detalles y actualiza inventario.
+        /// Todo dentro de una transacción atómica.
+        /// </summary>
+        public async Task<bool> ProcessOrderAsync(ObservableCollection<Product> cartItems, int userId, double totalAmount)
         {
-            // 1. Convertir la lista del carrito [Laptop, Smart, Laptop]
-            //    en un diccionario de {ID_Producto, Cantidad} -> { {1, 2}, {2, 1} }
-            var productQuantities = new Dictionary<int, int>();
-            foreach (var product in cartItems)
-            {
-                if (productQuantities.ContainsKey(product.Id))
-                {
-                    productQuantities[product.Id]++;
-                }
-                else
-                {
-                    productQuantities[product.Id] = 1;
-                }
-            }
+            // 1. Agrupar productos por ID para manejar cantidades (si compró 2 laptops iguales)
+            var productQuantities = cartItems
+                .GroupBy(p => p.Id)
+                .ToDictionary(g => g.Key, g => g.Count());
 
-            // 2. Abrir conexión y empezar una transacción
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
@@ -333,48 +313,105 @@ namespace ECommerceMaui.Servicios
                 {
                     try
                     {
-                        // 3. Crear el comando (reutilizable)
-                        var command = new MySqlCommand(
-                            "UPDATE products SET stock = stock - @Quantity " +
-                            "WHERE product_id = @ProductId AND stock >= @Quantity",
+                        // ---------------------------------------------------------
+                        // PASO A: Crear la Orden (Header)
+                        // ---------------------------------------------------------
+                        var orderCommand = new MySqlCommand(
+                            "INSERT INTO orders (user_id, total_amount) VALUES (@UserId, @Total); SELECT LAST_INSERT_ID();",
                             connection, transaction);
 
-                        // 4. Iterar sobre cada producto en nuestro diccionario
+                        orderCommand.Parameters.AddWithValue("@UserId", userId);
+                        orderCommand.Parameters.AddWithValue("@Total", totalAmount);
+
+                        // Ejecutamos y obtenemos el ID generado automáticamente (order_id)
+                        var newOrderIdLong = await orderCommand.ExecuteScalarAsync();
+                        int newOrderId = Convert.ToInt32(newOrderIdLong);
+
+                        // ---------------------------------------------------------
+                        // PASO B: Procesar cada producto (Stock y Detalles)
+                        // ---------------------------------------------------------
                         foreach (var item in productQuantities)
                         {
-                            var productId = item.Key;
-                            var quantityToBuy = item.Value;
+                            int productId = item.Key;
+                            int quantity = item.Value;
 
-                            command.Parameters.Clear();
-                            command.Parameters.AddWithValue("@Quantity", quantityToBuy);
-                            command.Parameters.AddWithValue("@ProductId", productId);
+                            // Obtenemos el precio unitario del producto original en la lista
+                            // (Tomamos el primero del grupo para obtener el precio)
+                            double price = cartItems.First(p => p.Id == productId).Price;
 
-                            // 5. Ejecutar la actualización
-                            int rowsAffected = await command.ExecuteNonQueryAsync();
+                            // 1. Actualizar Stock (Verificar que haya suficiente)
+                            var stockCommand = new MySqlCommand(
+                                "UPDATE products SET stock = stock - @Quantity WHERE product_id = @ProductId AND stock >= @Quantity",
+                                connection, transaction);
+                            stockCommand.Parameters.AddWithValue("@Quantity", quantity);
+                            stockCommand.Parameters.AddWithValue("@ProductId", productId);
 
-                            // 6. ¡Verificación clave!
-                            // Si rowsAffected es 0, significa que la condición "AND stock >= @Quantity"
-                            // falló (no hay suficiente stock).
+                            int rowsAffected = await stockCommand.ExecuteNonQueryAsync();
+
                             if (rowsAffected == 0)
                             {
-                                await transaction.RollbackAsync(); // ¡Deshacer todo!
-                                Debug.WriteLine($"Error de stock para Producto ID: {productId}");
-                                return false; // Indicar fallo
+                                // Si no afectó filas, es que no había stock suficiente
+                                await transaction.RollbackAsync();
+                                Debug.WriteLine($"Stock insuficiente para producto ID: {productId}");
+                                return false;
                             }
+
+                            // 2. Insertar Detalle de Orden
+                            var detailCommand = new MySqlCommand(
+                                "INSERT INTO order_details (order_id, product_id, quantity, price_per_unit) VALUES (@OrderId, @ProductId, @Quantity, @Price)",
+                                connection, transaction);
+                            detailCommand.Parameters.AddWithValue("@OrderId", newOrderId);
+                            detailCommand.Parameters.AddWithValue("@ProductId", productId);
+                            detailCommand.Parameters.AddWithValue("@Quantity", quantity);
+                            detailCommand.Parameters.AddWithValue("@Price", price);
+
+                            await detailCommand.ExecuteNonQueryAsync();
                         }
 
-                        // 7. Si el bucle termina sin problemas, todo está bien.
-                        await transaction.CommitAsync(); // ¡Confirmar todos los cambios!
-                        return true; // Indicar éxito
+                        // ---------------------------------------------------------
+                        // PASO C: Confirmar todo
+                        // ---------------------------------------------------------
+                        await transaction.CommitAsync();
+                        return true;
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error en transacción de stock: {ex.Message}");
-                        await transaction.RollbackAsync(); // Deshacer por si acaso
+                        Debug.WriteLine($"Error en transacción de compra: {ex.Message}");
+                        await transaction.RollbackAsync();
                         return false;
                     }
                 }
             }
+        }
+        public async Task<List<Category>> GetCategoriesAsync()
+        {
+            var categories = new List<Category>();
+            try
+            {
+                using (var connection = new MySqlConnection(_connectionString))
+                {
+                    await connection.OpenAsync();
+                    var command = new MySqlCommand("SELECT * FROM categories", connection);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            categories.Add(new Category
+                            {
+                                Id = reader.GetInt32("category_id"),
+                                Name = reader.GetString("name"),
+                                Description = reader.GetString("description")
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error obteniendo categorías: {ex.Message}");
+            }
+            return categories;
         }
     }
 }

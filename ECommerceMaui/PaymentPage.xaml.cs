@@ -1,4 +1,5 @@
-using ECommerceMaui.Servicios; // �Importante! Acceso al servicio
+﻿using ECommerceMaui.Servicios; // Acceso al servicio
+using System.Linq;
 
 namespace ECommerceMaui;
 
@@ -14,34 +15,71 @@ public partial class PaymentPage : ContentPage
 
     private async void OnPayClicked(object sender, EventArgs e)
     {
-        // 1. �Intentamos actualizar el stock primero!
-        //    Obtenemos la lista de �tems desde nuestro carrito global
-        var cartItems = ShoppingCartService.Instance.CartItems;
+        // 1. Validar Sesión (IGUAL QUE ANTES)
+        var currentUser = Services.AuthService.Instance.CurrentUser;
+        if (currentUser == null)
+        {
+            await DisplayAlert("Error", "Sesión no válida.", "OK");
+            return;
+        }
 
-        bool updateSuccess = await _dbService.UpdateStockAsync(cartItems);
+        // 2. Validar Campos de Dirección (IGUAL QUE ANTES)
+        if (string.IsNullOrWhiteSpace(StreetEntry.Text) ||
+            string.IsNullOrWhiteSpace(ColoniaEntry.Text) ||
+            string.IsNullOrWhiteSpace(ZipEntry.Text) ||
+            string.IsNullOrWhiteSpace(CityEntry.Text) ||
+            string.IsNullOrWhiteSpace(StateEntry.Text))
+        {
+            await DisplayAlert("Faltan Datos", "Por favor, completa la dirección de envío.", "OK");
+            return;
+        }
+
+        // 3. Validar Carrito (IGUAL QUE ANTES)
+        var cartItems = ShoppingCartService.Instance.CartItems;
+        if (cartItems.Count == 0)
+        {
+            await DisplayAlert("Carrito Vacío", "No tienes productos para comprar.", "OK");
+            return;
+        }
+
+        // --- CAMBIO 1: Calcular el total ANTES de ir a la BD ---
+        // Necesitamos este valor para guardarlo en la tabla 'orders'
+        double total = cartItems.Sum(p => p.Price);
+
+        // --- CAMBIO 2: Usar ProcessOrderAsync en lugar de UpdateStockAsync ---
+        // Le pasamos el carrito, el ID del usuario y el Total calculado.
+        bool updateSuccess = await _dbService.ProcessOrderAsync(cartItems, currentUser.UserId, total);
 
         if (updateSuccess)
         {
-            // --- SIMULACI�N DE PAGO EXITOSO ---
+            // --- CONSTRUIR EL MENSAJE FINAL ---
 
-            // 2. Mostrar alerta de �xito
-            await DisplayAlert("Pago Exitoso", "Tu pago ha sido procesado y el inventario ha sido actualizado.", "OK");
+            // Formatear dirección
+            string fullAddress = $"{StreetEntry.Text}, {ColoniaEntry.Text}, CP {ZipEntry.Text}\n{CityEntry.Text}, {StateEntry.Text}";
 
-            // 3. Vaciar el carrito de compras (local)
+            // Obtener nombres de productos (El total ya lo calculamos arriba)
+            string productNames = string.Join(", ", cartItems.Select(p => p.Name));
+
+            string mensaje =
+                $"✅ ¡Compra Exitosa!\n\n" +
+                $"📦 Artículos: {productNames}\n" +
+                $"💰 Total pagado: ${total:F2}\n\n" + // Usamos la variable 'total' de arriba
+                $"🚚 Enviando a:\n{fullAddress}\n\n" +
+                $"ℹ️ Tipo de envío: Express (3 días)\n\n" +
+                $"📧 Se ha enviado la confirmación a: {currentUser.Email}";
+
+            await DisplayAlert("Pedido Confirmado", mensaje, "Genial");
+
+            // Limpiar y Salir
             ShoppingCartService.Instance.ClearCart();
-
-            // 4. Regresar al usuario a la p�gina de inicio
             await Navigation.PopToRootAsync();
         }
         else
         {
-            // --- FALLO LA ACTUALIZACI�N DE STOCK ---
+            // Si falla, es probable que no haya stock suficiente
             await DisplayAlert("Error de Pago",
-                "No se pudo procesar el pedido. No hay suficiente inventario para uno o m�s productos. Por favor, revisa tu carrito.",
+                "No se pudo procesar el pedido. Es posible que el inventario se haya agotado.",
                 "OK");
-
-            // No limpiamos el carrito y no regresamos,
-            // para que el usuario pueda arreglar su pedido.
         }
     }
 }

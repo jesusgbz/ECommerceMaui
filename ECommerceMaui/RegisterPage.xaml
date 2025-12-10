@@ -54,6 +54,30 @@
                     IsPassword="True" />
             </Frame>
 
+            <Label Text="Elige tu Avatar:" TextColor="Gray" />
+
+            <FlexLayout JustifyContent="SpaceBetween">
+                <ImageButton x:Name="Avatar1" Source="https://cdn-icons-png.flaticon.com/512/4526/4526315.png"
+                 HeightRequest="60" WidthRequest="60" CornerRadius="30"
+                 BorderColor="Transparent" BorderWidth="2"
+                 Clicked="OnAvatarSelected" CommandParameter="1"/>
+
+                <ImageButton x:Name="Avatar2" Source="https://cdn-icons-png.flaticon.com/512/4526/4526323.png"
+                 HeightRequest="60" WidthRequest="60" CornerRadius="30"
+                 BorderColor="Transparent" BorderWidth="2"
+                 Clicked="OnAvatarSelected" CommandParameter="2"/>
+
+                <ImageButton x:Name="Avatar3" Source="https://cdn-icons-png.flaticon.com/512/4526/4526442.png"
+                 HeightRequest="60" WidthRequest="60" CornerRadius="30"
+                 BorderColor="Transparent" BorderWidth="2"
+                 Clicked="OnAvatarSelected" CommandParameter="3"/>
+
+                <ImageButton x:Name="Avatar4" Source="https://cdn-icons-png.flaticon.com/512/4526/4526446.png"
+                 HeightRequest="60" WidthRequest="60" CornerRadius="30"
+                 BorderColor="Transparent" BorderWidth="2"
+                 Clicked="OnAvatarSelected" CommandParameter="4"/>
+            </FlexLayout>
+            
             <Button 
                 x:Name="RegisterButton"
                 Text="Registrarme"

@@ -9,11 +9,15 @@ namespace ECommerceMaui;
 
 public partial class HomePage : ContentPage
 {
-    // 1. Variable para nuestro servicio de base de datos
+    //Variable para nuestro servicio de base de datos
     private readonly DatabaseService _dbService;
     private static readonly HttpClient _httpClient = new HttpClient();
-    // 2. La lista de productos (ya no la inicializamos aquí)
-    public ObservableCollection<Product> Products { get; set; }
+
+    // 1. LISTA MAESTRA (Todos los productos descargados)
+    private List<Product> _allProducts = new List<Product>();
+
+    // 2. LISTA VISIBLE (Lo que ve el usuario, filtrada)
+    public ObservableCollection<Product> DisplayProducts { get; set; } = new ObservableCollection<Product>();
 
     public HomePage()
     {
@@ -23,10 +27,8 @@ public partial class HomePage : ContentPage
         _dbService = new DatabaseService();
 
 
-        Products = new ObservableCollection<Product>();
-
-
-        ProductsCollectionView.ItemsSource = Products;
+        // Enlazamos la UI a la lista visible
+        ProductsCollectionView.ItemsSource = DisplayProducts;
     }
 
     /// <summary>
@@ -36,38 +38,97 @@ public partial class HomePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await LoadProductsFromDbAsync();
+        await LoadDataAsync();
     }
 
     /// <summary>
     /// Método (reemplazo del 'LoadMockProducts')
     /// que llama al servicio de base de datos.
     /// </summary>
-    private async Task LoadProductsFromDbAsync()
+    private async Task LoadDataAsync()
     {
-        Products.Clear();
+        // A. Cargar Categorías
+        var categories = await _dbService.GetCategoriesAsync();
+        // Agregamos una opción "Todas" al principio
+        categories.Insert(0, new Category { Id = 0, Name = "Todas" });
+        CategoriesCollectionView.ItemsSource = categories;
 
+        // B. Cargar Productos
+        DisplayProducts.Clear();
         var productsFromDb = await _dbService.GetProductsAsync();
 
         if (productsFromDb != null)
         {
-            foreach (var product in productsFromDb)
-            {
-                // 1. Añadimos el producto (con su texto) a la lista.
-                // La UI lo mostrará inmediatamente, pero sin imagen.
-                Products.Add(product);
+            // Guardamos en la Lista Maestra
+            _allProducts = productsFromDb.ToList();
 
-                // 2. Iniciamos la descarga de la imagen para este producto
-                //    en segundo plano. No esperamos (no usamos 'await' aquí)
-                //    para que la UI no se bloquee.
-                _ = LoadProductImageAsync(product);
+            // Y mostramos todo inicialmente
+            foreach (var p in _allProducts)
+            {
+                DisplayProducts.Add(p);
+                _ = LoadProductImageAsync(p); // Carga imágenes en segundo plano
             }
         }
     }
-/// <summary>
-/// NUEVO MÉTODO: Carga la imagen para un producto específico
-/// usando la lógica de HttpClient (la solución de Copilot).
-/// </summary>
+
+    // --- LÓGICA DE FILTRADO ---
+
+    private string _searchText = "";
+    private int _selectedCategoryId = 0; // 0 = Todas
+
+    /// <summary>
+    /// Se ejecuta cada vez que escribes una letra
+    /// </summary>
+    private void OnSearchBarTextChanged(object sender, TextChangedEventArgs e)
+    {
+        _searchText = e.NewTextValue;
+        ApplyFilters();
+    }
+
+    /// <summary>
+    /// Se ejecuta al tocar una categoría
+    /// </summary>
+    private void OnCategorySelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var category = e.CurrentSelection.FirstOrDefault() as Category;
+        if (category == null) return;
+
+        _selectedCategoryId = category.Id;
+        ApplyFilters();
+    }
+
+    /// <summary>
+    /// Aplica ambos filtros (Texto Y Categoría) al mismo tiempo
+    /// </summary>
+    private void ApplyFilters()
+    {
+        // 1. Empezamos con la lista maestra completa
+        var filtered = _allProducts.AsEnumerable();
+
+        // 2. Aplicamos filtro de categoría (si no es "Todas")
+        if (_selectedCategoryId != 0)
+        {
+            filtered = filtered.Where(p => p.CategoryId == _selectedCategoryId); // Necesitas añadir CategoryId al modelo Product
+        }
+
+        // 3. Aplicamos filtro de texto (si escribieron algo)
+        if (!string.IsNullOrWhiteSpace(_searchText))
+        {
+            filtered = filtered.Where(p => p.Name.ToLower().Contains(_searchText.ToLower()));
+        }
+
+        // 4. Actualizamos la lista visible
+        DisplayProducts.Clear();
+        foreach (var p in filtered)
+        {
+            DisplayProducts.Add(p);
+        }
+    }
+
+    /// <summary>
+    ///  Carga la imagen para un producto específico
+    /// usando la lógica de HttpClient.
+    /// </summary>
     private async Task LoadProductImageAsync(Product product)
     {
         // Forzamos PNG
