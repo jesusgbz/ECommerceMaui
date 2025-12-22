@@ -19,15 +19,19 @@
         <CollectionView Grid.Row="1" 
                         x:Name="CategoriesCollectionView"
                         HeightRequest="60"
-                        SelectionMode="Single"
-                        SelectionChanged="OnCategorySelectionChanged"
                         Margin="10">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
             </CollectionView.ItemsLayout>
+
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Frame BackgroundColor="#2C2C2E" Padding="15,10" CornerRadius="20" BorderColor="Transparent">
+
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCategoryTapped" CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+
                         <Label Text="{Binding Name}" TextColor="White" FontAttributes="Bold" />
 
                         <VisualStateManager.VisualStateGroups>
@@ -47,10 +51,7 @@
 
         <CollectionView Grid.Row="2" 
                         x:Name="ProductsCollectionView"
-                        Margin="10"
-                        SelectionMode="Single"
-                        SelectionChanged="OnProductSelected">
-
+                        Margin="10">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical" Span="2" 
                                  HorizontalItemSpacing="10" VerticalItemSpacing="10" />
@@ -59,6 +60,11 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Frame Padding="0" CornerRadius="15" BackgroundColor="#2C2C2E" HeightRequest="220">
+
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnProductTapped" CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
+
                         <VerticalStackLayout Spacing="5">
                             <Image Source="{Binding ProductImageSource}" Aspect="AspectFill" HeightRequest="120" WidthRequest="170" />
                             <Label Text="{Binding Name}" TextColor="White" FontSize="16" FontAttributes="Bold" Margin="10,5,10,0" LineBreakMode="TailTruncation" />

@@ -1,5 +1,5 @@
 ﻿using ECommerceMaui.Models;
-using MySql.Data.MySqlClient; // ¡El paquete que instalamos!
+using MySql.Data.MySqlClient; 
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics; // Para ver errores en la consola

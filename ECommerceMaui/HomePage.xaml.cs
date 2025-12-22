@@ -88,7 +88,7 @@ public partial class HomePage : ContentPage
     /// <summary>
     /// Se ejecuta al tocar una categoría
     /// </summary>
-    private void OnCategorySelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnCategoryTapped(object sender, SelectionChangedEventArgs e)
     {
         var category = e.CurrentSelection.FirstOrDefault() as Category;
         if (category == null) return;
@@ -156,29 +156,22 @@ public partial class HomePage : ContentPage
 
 
     /// <summary>
-    /// Se ejecuta cuando el usuario selecciona un producto de la lista.
-    /// (¡Ahora también registra la vista!)
+    /// Método infalible para detectar clics en Android
     /// </summary>
-    private async void OnProductSelected(object sender, SelectionChangedEventArgs e)
+    private async void OnProductTapped(object sender, TappedEventArgs e)
     {
-        var product = e.CurrentSelection.FirstOrDefault() as Product;
-        if (product == null)
-            return;
+        // 1. Obtenemos el producto desde el CommandParameter
+        var product = e.Parameter as Product;
+        if (product == null) return;
 
-        // --- ¡NUEVA LÓGICA DE HISTORIAL! ---
+        // 2. Lógica de Historial (Igual que antes)
         var currentUser = Services.AuthService.Instance.CurrentUser;
         if (currentUser != null)
         {
-            // Llamamos al método de la BBDD en segundo plano
-            // No usamos "await" para no retrasar la navegación
             _ = _dbService.LogProductViewAsync(currentUser.UserId, product.Id);
         }
-        // --- FIN DE LÓGICA DE HISTORIAL ---
 
-        // Navegamos a la página de detalle (sin cambios)
+        // 3. Navegar
         await Navigation.PushAsync(new ProductDetailPage(product));
-
-        // Limpiamos la selección (sin cambios)
-        ((CollectionView)sender).SelectedItem = null;
     }
 }
